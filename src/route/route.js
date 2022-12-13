@@ -47,9 +47,9 @@ router.post("/url/shorten", async (req, res) => {
             shortUrl: newUrl
         }
 
-        let savedData = await Model.create(urlData)
+        await Model.create(urlData)
 
-        return res.status(201).send({ status: true, data: savedData })
+        return res.status(201).send({ status: true, data: urlData })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
