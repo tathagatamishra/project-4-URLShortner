@@ -1,4 +1,5 @@
 const express = require('express')
+const axios = require('axios')
 const Model = require("../model/model")
 
 const router = express.Router()
@@ -17,15 +18,20 @@ router.post("/url/shorten", async (req, res) => {
 
 
         if (!urlRegex.test(realUrl)) return res.status(400).send({ status: false, message: "Please enter a valid url" })
-        
-        
+
+        let validUrl = await axios.get(realUrl)
+        .then(() => longUrl)
+        .catch(() => null)
+        if (!validUrl) return res.status(400).send({ status: false, message: "Please enter a working url" })
+
+
         let sameUrl = await Model.findOne({ longUrl: realUrl }).select({ _id: 0, __v: 0 })
         if (sameUrl) return res.status(200).send({ status: true, message: "Data already present in our database", data: sameUrl })
 
 
 
         let ranNum = Math.floor(Math.random() * (15 - 10 + 1)) + 10
-        let char = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let char = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let code = ""
 
         for (let i = 0; i < ranNum; i++) {
