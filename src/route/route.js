@@ -5,24 +5,22 @@ const Model = require("../model/model")
 const router = express.Router()
 
 
-let urlRegex = /^((ftp|http|https):\/\/)?(www.)?(?!.*(ftp|http|https|www.))[a-zA-Z0-9_-]+(\.[a-zA-Z]+)+((\/)[\w#]+)*(\/\w+\?[a-zA-Z0-9_]+=\w+(&[a-zA-Z0-9_]+=\w+)*)?$/gm;
+let urlRegex = /^((ftp|http|https|www.):\/\/)?(www.)?(?!.*(ftp|http|https|www.))[a-zA-Z0-9_-]+(\.[a-zA-Z]+)+((\/)[\w#]+)*(\/\w+\?[a-zA-Z0-9_]+=\w+(&[a-zA-Z0-9_]+=\w+)*)?$/gm;
 
 
 router.post("/url/shorten", async (req, res) => {
     try {
-
-        let realUrl = req.body.url.trim()
-
+        
         if (Object.keys(req.body).length == 0) return res.status(400).send({ status: false, message: "Body can't be empty" })
+        
+        let realUrl = req.body.url.trim()
         if (!realUrl) return res.status(400).send({ status: false, message: "Enter a link to shorten" })
 
 
         if (!urlRegex.test(realUrl)) return res.status(400).send({ status: false, message: "Please enter a valid url" })
 
-        let validUrl = await axios.get(realUrl)
-        .then(() => longUrl)
-        .catch(() => null)
-        if (!validUrl) return res.status(400).send({ status: false, message: "Please enter a working url" })
+        // let validUrl = await axios.get(realUrl).then(() => longUrl).catch(() => null)
+        // if (!validUrl) return res.status(400).send({ status: false, message: "Please enter a working url" })
 
 
         let sameUrl = await Model.findOne({ longUrl: realUrl }).select({ _id: 0, __v: 0 })
@@ -68,7 +66,7 @@ router.get("/:urlCode", async (req, res) => {
         let longUrl = urlData.longUrl
 
         // return res.status(302).send({ longUrl })
-        return res.redirect(longUrl)
+        return res.status(302).redirect(longUrl)
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
