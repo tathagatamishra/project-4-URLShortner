@@ -9,7 +9,7 @@ const router = express.Router()
 const redisClient = redis.createClient({
     url: "redis://default:CW6Urr778VUu47LZQLOOpHIURmIS0S8G@redis-18636.c91.us-east-1-3.ec2.cloud.redislabs.com:18636"
 })
-redisClient.connect(console.log("Connected to Redis.."))
+redisClient.connect(console.log("Connected to 🔴 is"))
 
 
 
@@ -19,20 +19,20 @@ let urlRegex = /^((ftp|http|https|www.):\/\/)?(www.)?(?!.*(ftp|http|https|www.))
 router.post("/url/shorten", async (req, res) => {
     try {
 
-        if (Object.keys(req.body).length == 0) return res.status(400).send({ status: false, message: "Body can't be empty" })
+        if (Object.keys(req.body).length == 0) return res.status(400).send({ status: false, message: "💪 Body can't be empty 😒" })
 
         let realUrl = req.body.url.trim()
-        if (!realUrl) return res.status(400).send({ status: false, message: "Enter a link to shorten" })
+        if (!realUrl) return res.status(400).send({ status: false, message: "Enter a link to shorten 🤏" })
 
 
-        if (!urlRegex.test(realUrl)) return res.status(400).send({ status: false, message: "Please enter a valid url" })
+        if (!urlRegex.test(realUrl)) return res.status(400).send({ status: false, message: "Please enter a valid url 🌐" })
 
         // let validUrl = await axios.get(realUrl).then(() => longUrl).catch(() => null)
         // if (!validUrl) return res.status(400).send({ status: false, message: "Please enter a working url" })
 
 
         let sameUrl = await Model.findOne({ longUrl: realUrl }).select({ _id: 0, __v: 0 })
-        if (sameUrl) return res.status(200).send({ status: true, message: "Data already present in our database", data: sameUrl })
+        if (sameUrl) return res.status(200).send({ status: true, message: "Data already present in our database 😄", data: sameUrl })
 
 
 
@@ -67,16 +67,16 @@ router.get("/:urlCode", async (req, res) => {
     try {
         let code = req.params.urlCode
 
-        let cachVar = await redisClient.get(code)
+        let cacheVar = await redisClient.get(code)
 
-        if (cachVar) return res.status(302).redirect(cachVar)
+        if (cacheVar) return res.status(302).redirect(cacheVar)
 
 
         let urlData = await Model.findOne({ urlCode: code }).select({ longUrl: 1, _id: 0 })
 
+        if (!urlData) return res.status(404).send({ status: false, message: "This short url not exist in the database 😥" })
+        
         let longUrl = urlData.longUrl
-
-        if (!urlData) return res.status(404).send({ status: false, message: "This short url not exist in the database" })
 
 
         await redisClient.set(code, longUrl)
