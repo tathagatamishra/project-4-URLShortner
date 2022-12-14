@@ -1,8 +1,16 @@
 const express = require('express')
 const axios = require('axios')
+const redis = require('redis')
 const Model = require("../model/model")
 
 const router = express.Router()
+
+
+const redisClient = redis.createClient({
+    url: "redis://default:CW6Urr778VUu47LZQLOOpHIURmIS0S8G@redis-18636.c91.us-east-1-3.ec2.cloud.redislabs.com:18636"
+})
+redisClient.connect(console.log("Connected to Redis.."))
+
 
 
 let urlRegex = /^((ftp|http|https|www.):\/\/)?(www.)?(?!.*(ftp|http|https|www.))[a-zA-Z0-9_-]+(\.[a-zA-Z]+)+((\/)[\w#]+)*(\/\w+\?[a-zA-Z0-9_]+=\w+(&[a-zA-Z0-9_]+=\w+)*)?$/gm;
@@ -10,9 +18,9 @@ let urlRegex = /^((ftp|http|https|www.):\/\/)?(www.)?(?!.*(ftp|http|https|www.))
 
 router.post("/url/shorten", async (req, res) => {
     try {
-        
+
         if (Object.keys(req.body).length == 0) return res.status(400).send({ status: false, message: "Body can't be empty" })
-        
+
         let realUrl = req.body.url.trim()
         if (!realUrl) return res.status(400).send({ status: false, message: "Enter a link to shorten" })
 
@@ -59,14 +67,22 @@ router.get("/:urlCode", async (req, res) => {
     try {
         let code = req.params.urlCode
 
-        let urlData = await Model.findOne({ urlCode: code }).select({ longUrl: 1, _id: 0 })
+        let cachVar = await redisClient.get(code)
 
-        if (!urlData) return res.status(404).send({ status: false, message: "This short url not exist in the database" })
+        if (cachVar) return res.status(302).redirect(cachVar)
+
+
+        let urlData = await Model.findOne({ urlCode: code }).select({ longUrl: 1, _id: 0 })
 
         let longUrl = urlData.longUrl
 
-        // return res.status(302).send({ longUrl })
+        if (!urlData) return res.status(404).send({ status: false, message: "This short url not exist in the database" })
+
+
+        await redisClient.set(code, longUrl)
+
         return res.status(302).redirect(longUrl)
+
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
