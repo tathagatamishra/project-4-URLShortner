@@ -8,7 +8,6 @@ const router = express.Router()
 const redisClient = redis.createClient({
     url: "redis://default:CW6Urr778VUu47LZQLOOpHIURmIS0S8G@redis-18636.c91.us-east-1-3.ec2.cloud.redislabs.com:18636"
 })
-redisClient.on("error", (error) => console.error(`Error : ${error}`))
 redisClient.connect(console.log("Connected to 🔴 is"))
 
 
