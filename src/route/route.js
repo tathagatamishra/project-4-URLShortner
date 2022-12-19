@@ -26,9 +26,9 @@ router.post("/url/shorten", async (req, res) => {
         if (!urlRegex.test(realUrl)) return res.status(400).send({ status: false, message: "Please enter a valid url 🌐" })
 
 
+
         let sameUrl = await Model.findOne({ longUrl: realUrl }).select({ _id: 0, __v: 0 })
         if (sameUrl) return res.status(200).send({ status: true, message: "Data already present in our database 😄", data: sameUrl })
-
 
 
         let ranNum = Math.floor(Math.random() * (15 - 10 + 1)) + 10
@@ -39,7 +39,6 @@ router.post("/url/shorten", async (req, res) => {
             code += char.charAt(Math.floor(Math.random() * char.length))
         }
 
-
         let newUrl = `localhost:3000/${code}`
 
         let urlData = {
@@ -49,6 +48,8 @@ router.post("/url/shorten", async (req, res) => {
         }
 
         await Model.create(urlData)
+
+       
 
         return res.status(201).send({ status: true, data: urlData })
     }
@@ -86,4 +87,8 @@ router.get("/:urlCode", async (req, res) => {
     }
 })
 
+
 module.exports = router
+
+
+
